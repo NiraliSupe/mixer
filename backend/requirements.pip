@@ -1,0 +1,7 @@
+celery==5.2.3
+celery[redis]
+Django==3.2.12
+djangorestframework==3.13.1
+psycopg2-binary==2.8.2
+django-celery-beat==2.2.1
+requests==2.27.1

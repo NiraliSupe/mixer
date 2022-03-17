@@ -1,0 +1,51 @@
+version: '3.7'
+services:
+    db:
+        build:
+            context: ./db
+        image: mixer_db
+        environment:
+            - POSTGRES_PASSWORD=postgres
+        ports:
+            - "54321:5432"
+        volumes:
+            - mixer-db:/var/lib/postgresql/data
+
+    backend:
+        build:
+            context: ./backend
+        image: mixer_backend
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend/backend:/backend
+        tty: true
+        #stdin_open: true
+        command: ./manage.py runserver 0.0.0.0:8000
+        depends_on:
+            - db
+
+    worker:
+        build:
+            context: ./backend
+        image: mixer_celery
+        command: celery -A api worker --loglevel=info
+        volumes:
+            - ./backend/backend:/backend
+
+    beat:
+        build:
+            context: ./backend
+        image: mixer_beat
+        command: celery -A api beat --loglevel=info #--scheduler django_celery_beat.schedulers:databaseSchedular
+        volumes:
+            - ./backend/backend:/backend
+
+    redis:
+        image: redis:6-alpine
+        ports:
+            - "6379:6379"
+
+volumes:
+    mixer-db:
+        name: mixer-db
